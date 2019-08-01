@@ -1,0 +1,262 @@
+[
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Heater",
+      "index": 1,
+      "instruction_code": "AAHE",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0.0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Humidifier",
+      "index": 2,
+      "instruction_code": "AAHU",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Vent Fan",
+      "index": 3,
+      "instruction_code": "AAVE",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Grow Lighting",
+      "index": 4,
+      "instruction_code": "ALPN",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 100.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "White Lighting",
+      "index": 5,
+      "instruction_code": "ALPN",
+      "instruction_id": 2,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 100.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Circulation Fan",
+      "index": 6,
+      "instruction_code": "AACR",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "pH Dose Pump",
+      "index": 7,
+      "instruction_code": "AWPH",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 10
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "EC Dose Pump",
+      "index": 8,
+      "instruction_code": "AWEC",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 10.0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Water Supply Dose Pump",
+      "index": 9,
+      "instruction_code": "AWLV",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "CO2 Solenoid",
+      "index": 10,
+      "instruction_code": "AACO",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Cool Solenoid",
+      "index": 11,
+      "instruction_code": "AACL",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Water Circulation",
+      "index": 12,
+      "instruction_code": "AWCR",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  },
+  {
+    "model": "actuators.actuator",
+    "fields": {
+      "name": "Water Aeration",
+      "index": 13,
+      "instruction_code": "AWAR",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0,
+      "pre_over_value": 0,
+      "timestamp": 0,
+      "override": false,
+      "override_start": 0,
+      "override_end": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "error_state" : 0,
+      "dose_to": 0
+    }
+  }
+]

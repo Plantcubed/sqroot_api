@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <title>SqRoot - Images</title>
+
+    <!-- return to home page after 60 seconds -->
+    <script>setTimeout(function () {
+        window.location.href = "/"
+    }, 300000);</script>
+
+    <script type="text/javascript">
+        var recipeRun = "/recipes/runs/";
+        {% load static %}
+        var imagesDir = "{% static "/media/runs/" %}";
+        var timerFunc;
+        var recipeindex = "";
+        var imageindex;
+        var imgelement;
+        var imagepreurl;
+        var iscale = 3;
+        var iheight = 960 / iscale;
+        var iwidth = 1280 / iscale;
+        var lastRun;
+
+        // disable console logging.
+        // console.users = function() {}
+
+        // initial form load data
+        function getFormData() {
+            getReceipeHistory();
+
+            displayLatestImage();
+        }
+
+        // refresh data
+        function updateFormData() {
+            displayLatestImage();
+        }
+
+        function getReceipeHistory() {
+            callGetAJAX(getJSONfromAPIgetReceipeHistory, true, recipeRun);
+        }
+
+        function getJSONfromAPIgetReceipeHistory(code, data) {
+            var jsonObject = JSON.parse(data);
+
+            var table = document.getElementById("rechislist");
+
+            try {
+                table.deleteRow(0);
+            }
+            catch (err) {
+            }
+
+            var start = "";
+            var end = "";
+            lastRun = jsonObject.count;
+            for (i = lastRun; i != 0; i--) {
+                var jsonrecipename = jsonObject.results[i - 1]
+                var startjson = new Date(jsonrecipename.start_timestamp * 1000);
+                var endjson = new Date(jsonrecipename.end_timestamp * 1000);
+                start = startjson.toLocaleDateString('en-US') + " " + startjson.toLocaleTimeString('en-US');
+                end = endjson.toLocaleDateString('en-US') + " " + endjson.toLocaleTimeString('en-US');
+                addRecipeHistorytoList(i, jsonrecipename.name, start, end);
+            }
+        }
+
+        function addRecipeHistorytoList(index, filename, starttime, endtime) {
+            var table = document.getElementById("rechislist");
+            var row = table.insertRow(0);
+            row.id = "rechislist" + index;
+            row.onclick = function () {
+                onclickSelect(this)
+            }
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(0);
+            var cell3 = row.insertCell(0);
+            cell1.innerHTML = endtime;
+            cell1.className = "centertext"
+            cell2.innerHTML = starttime;
+            cell2.className = "centertext"
+            cell3.innerHTML = filename;
+            cell3.className = "centertext"
+        }
+
+        function onclickShowImage() {
+            // remove the rechislist from the string
+            index = recipeindex.replace("rechislist", "");
+            // directory of image
+            imagepreurl = imagesDir + index + '/'
+
+            if (UrlExists(imagepreurl + imageindex + '.jpg')) {
+                show_image(imagepreurl + imageindex + '.jpg', iwidth, iheight, 1, 'imageDiv')
+                imageindex = 1;
+
+                if (UrlExists(imagepreurl + imageindex + '.jpg')) {
+                    var forwardbut = document.getElementById("forwardbutton");
+                    forwardbut.className = "btn btn-primary btn-md";
+                }
+                var day = document.getElementById("daytext");
+                day.innerHTML = "Day " + imageindex;
+
+                //onclickImageScroll();
+            }
+        }
+
+
+        function show_image(src, width, height, alt, element) {
+            var img = document.createElement("IMG");
+            img.src = src;
+            img.width = width;
+            img.height = height;
+            img.alt = alt;
+            try {
+                document.getElementById(element).replaceChild(img, imgelement);
+                imgelement = img;
+            }
+            catch (err) {
+                document.getElementById(element).appendChild(img, imgelement);
+                imgelement = img;
+            }
+        }
+
+        function UrlExists(url) {
+            try {
+                var http = new XMLHttpRequest();
+                http.open('HEAD', url, false);
+                http.send();
+                return http.status != 404;
+            }
+            catch (err) {
+            }
+        }
+
+        function displayLatestImage() {
+            // look for the last image in the dir
+            {% load static %}
+            var nowimagepreurl = "{% static "/media/runs/current.jpg" %}";
+            if (UrlExists(nowimagepreurl)) {
+                show_image(nowimagepreurl, iwidth, iheight, 5, 'imageNowDiv')
+            }
+        }
+
+        function onclickSelect(arg) {
+            if (recipeindex != "") {
+                // deselect row
+                var row = document.getElementById(recipeindex);
+                row.className = "";
+                if (recipeindex == arg.id) {
+                    recipeindex = "";
+                    var runbut = document.getElementById("selectbutton");
+                    runbut.className = "btn btn-primary btn-md disabled"
+                    return
+                }
+            }
+            var row = document.getElementById(arg.id);
+            row.className = "info";
+            recipeindex = arg.id;
+            // enable run buttone
+            var runbut = document.getElementById("selectbutton");
+            runbut.className = "btn btn-primary btn-md enabled"
+            imageindex = 1;
+        }
+
+        function onclickBackImage() {
+            var inext = imageindex - 1;
+            console.log(inext);
+            if (UrlExists(imagepreurl +  inext + '.jpg')) {
+                imageindex =  inext;
+                show_image(imagepreurl + inext + '.jpg', iwidth, iheight, 5, 'imageDiv')
+
+                var but = document.getElementById("forwardbutton");
+                but.className = "btn btn-primary btn-md";
+
+                inext = imageindex - 1;
+                if (!UrlExists(imagepreurl + inext + '.jpg')) {
+                    var bbut = document.getElementById("backbutton");
+                    bbut.className = "btn btn-primary btn-md disabled";
+                }
+            }
+            var day = document.getElementById("daytext");
+            day.innerHTML = "Day " + imageindex;
+        }
+
+        function onclickForwardImage() {
+            var inext = imageindex + 1;
+            if (UrlExists(imagepreurl +  inext + '.jpg')) {
+                imageindex =  inext;
+                show_image(imagepreurl + inext + '.jpg', iwidth, iheight, 5, 'imageDiv')
+
+                var but = document.getElementById("backbutton");
+                but.className = "btn btn-primary btn-md";
+
+                inext = imageindex + 1;
+                if (!UrlExists(imagepreurl +  inext + '.jpg')) {
+                    var fbut = document.getElementById("forwardbutton");
+                    fbut.className = "btn btn-primary btn-md disabled";
+                }
+            }
+            var day = document.getElementById("daytext");
+            day.innerHTML = "Day " + imageindex;
+        }
+
+        function onclickImageScroll() {
+            var text = document.getElementById("scrollbutton").innerHTML;
+            if ( text.indexOf("More...") != -1 ) {
+                //window.scrollTo(0, 480);
+                document.getElementById('runimages').scrollIntoView();
+                document.getElementById("scrollbutton").innerHTML = "Less...";
+            }
+            else {
+                window.scrollTo(0, 0);
+                document.getElementById("scrollbutton").innerHTML = "More..."
+            }
+        }
+
+    </script>
+
+</head>
+
+<!--<body onload="getFormData();timerFunc = setInterval( updateFormData, 30000);">-->
+<body onload="getFormData()">
+
+<div class="template">
+    <div class="container-fluid">
+        <h3><b>Now</b></h3>
+        <div class="container-fluid myimagediv" id="imageNowDiv">
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h3><b>Recipe Run History</b></h3>
+        <div class="col-sm-10">
+            <table class="table table-hover table-striped centertext">
+                <thead class="centertext">
+                <tr>
+                    <th class="centertext">File Name</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </thead>
+                <tbody id="rechislist" class='clickable-row mytbody'>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <br>
+        <br>
+        <button type="button" onclick="onclickShowImage()" id="selectbutton" class="btn btn-primary btn-md disabled">
+            Show
+        </button>
+
+    </div>
+
+    <div class="container-fluid myimagediv" id="runimages">
+        <h3><b>Run Images</b></h3>
+        <button type="button" onclick="onclickBackImage()" id="backbutton" class="btn btn-primary btn-md disabled">
+            Back
+        </button>
+        <button type="button" onclick="onclickForwardImage()" id="forwardbutton"
+                class="btn btn-primary btn-md disabled">Forward
+        </button>
+        <div class="container-fluid" id="imageDiv" style="width: 400px; height: 400px">
+            <p id="daytext" style="right: 59px;">Day 1</p>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

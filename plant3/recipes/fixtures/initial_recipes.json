@@ -1,0 +1,30 @@
+[
+  {
+    "model": "recipes.recipe",
+    "fields": {
+      "name": "startup.gro",
+      "index": 1,
+      "description": "Startup Recipe",
+      "file": "recipes/startup.gro",
+      "type": "1"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "fields": {
+      "name": "shutdown.gro",
+      "index": 2,
+      "description": "Shutdown Recipe",
+      "file": "recipes/shutdown.gro",
+      "type": "2"
+    }
+  },
+  {
+    "model": "recipes.recipecontrol",
+    "fields": {
+      "current_run": 0,
+      "current_recipe": 0,
+      "startup": "1",
+      "shutdown": "2"    }
+  }
+]

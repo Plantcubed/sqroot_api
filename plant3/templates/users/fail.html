@@ -1,0 +1,29 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+
+{% if next %}
+    {% if user.is_authenticated %}
+
+<p>Your account doesn't have access to this page. To proceed,
+    please login with an account that has access.</p>
+    {% else %}
+
+<p>Please login to see this page.</p>
+    {% endif %}
+{% endif %}
+
+<meta http-equiv="refresh" content="5;url=/" />
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <H4>Operation could not be completed: {{ failmessage }}</H4>
+            {% csrf_token %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+

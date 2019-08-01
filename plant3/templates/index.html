@@ -1,0 +1,466 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <title>SqRoot - Main</title>
+
+    <script type="text/javascript">
+
+        //URIs
+        var recipe = "/recipes/";
+        var recipeRun = "/recipes/runs/";
+        var sensor = "/sensors/";
+        var value = "/value/";
+        var revisions = "/revisions/";
+        var controls = "/controls/";
+        var setpoint = "/setpoint/"
+        var ifconfigphp = "static/php/ifconfig.php";
+        var timerFunc;
+        var eth0ip = '';
+        var wlan0ip = '';
+        var REV_MAJOR = 0;
+        var REV_MINOR = 5;
+        var REV_BUILD = 237;
+
+        // disable console logging.
+        // console.users = function() {}
+
+        // initial form load data
+        function getFormData() {
+            getIPAddress();
+            setRevisionData();
+            getSensorData();
+            getReceipeData();
+            getSetpointData();
+
+            var temp = getFormattedDate();
+        }
+
+        function getUnixTime() {
+            {% load static %}
+            var timeurl ="{% static "php/gettime.php" %}"
+            //var timeurl = "php/gettime.php"
+            $.ajax({
+                type: "POST",
+                data: "",
+                url: timeurl,
+                success: function (result) {
+                    mytime = parseInt(result);
+                },
+                error: function (result) {
+                    console.log("error getting time")
+                }
+            });
+            return mytime;
+        }
+
+        function getFormattedDate() {
+            var dat = getUnixTime();
+            var d = new Date(0);
+            d.setUTCSeconds(dat);
+            var d_str = d.toString();
+            i = d_str.indexOf('(');
+            i = d_str.length - i;
+            d_str = d_str.substr(0,i);
+            d_str = d_str.substr(4);
+            i = d_str.lastIndexOf(':');
+            d_str = d_str.substr(0,i);
+            return d_str;
+        }
+
+
+        // refresh data
+        function updateFormData() {
+            getReceipeData();
+            getSensorData();
+            getSetpointData();
+
+            // update the time
+            document.getElementById("currenttime").innerHTML = getFormattedDate();
+        }
+
+        // get the receipe data to update the currently running recipe
+        function getReceipeData() {
+            callGetAJAX(getJSONfromAPIReceipeData, true, recipeRun);
+        }
+
+        // callback function for above
+        function getJSONfromAPIReceipeData(code, data) {
+            var Data = JSON.parse(data);
+
+            // get the name/start/stop times
+            if (Data.count > 0) {
+                // start
+                var datestamp = new Date(Data.results[Data.count - 1].start_timestamp * 1000);
+                document.getElementById("/recipestart/").innerHTML = datestamp.toLocaleDateString('en-US') + " " + datestamp.toLocaleTimeString('en-US');
+                // end
+                datestamp = new Date(Data.results[Data.count - 1].end_timestamp * 1000);
+                document.getElementById("/recipeend/").innerHTML = datestamp.toLocaleDateString('en-US') + " " + datestamp.toLocaleTimeString('en-US');
+                if (datestamp < Date.now()) {
+                    document.getElementById("/recipe/").innerHTML = '(' + Data.results[Data.count - 1].name + ')';
+                }
+                else {
+                    document.getElementById("/recipe/").innerHTML = Data.results[Data.count - 1].name;
+                }
+            }
+            else {
+                document.getElementById("/recipestart/").innerHTML = "n/a";
+                document.getElementById("/recipeend/").innerHTML = "n/a";
+                document.getElementById("/recipe/").innerHTML = "None";
+            }
+        }
+
+        // update the sensors
+        function getSensorData() {
+
+            document.getElementById("waterspinner").className = "fa fa-spinner";
+            document.getElementById("envspinner").className = "fa fa-spinner";
+            document.getElementById("lightpinner").className = "fa fa-spinner";
+
+            callGetAJAX(getJSONfromAPISensorData, true, sensor);
+        }
+
+        // callback function for the above
+        function getJSONfromAPISensorData(code, data) {
+            var jsonObject = JSON.parse(data);
+            var test = "";
+
+            for (i = 1; i < jsonObject.count + 1; i++) {
+                try {
+                    switch (i) {
+                        case 9:
+                            text = "ok"
+                            if ( jsonObject.results[i - 1].value == 0) text = "low";
+                            break;
+
+                        case 10:
+                            text = "closed"
+                            if ( jsonObject.results[i - 1].value == 0) text = "open";
+                            break;
+
+                        default:
+                            text = jsonObject.results[i - 1].value;
+                    }
+                    document.getElementById('/sensors/' + i + '/').innerHTML =  text;
+                }
+                catch (err) {
+                    //console.users(i)
+                }
+            }
+
+            document.getElementById("waterspinner").className = "fa fa-spinner fa-spin";
+            document.getElementById("envspinner").className = "fa fa-spinner fa-spin";
+            document.getElementById("lightpinner").className = "fa fa-spinner fa-spin";
+        }
+
+        function setRevisionData() {
+            callGetAJAX(setJSONfromAPIgetRevisionData, true, revisions);
+        }
+
+        function setJSONfromAPIgetRevisionData(code, data) {
+            var jsonObject = JSON.parse(data);
+
+            for (i = jsonObject.count; i != 0; i--) {
+                if (jsonObject.results[i - 1].name == "Plant3-dash")
+                    break;
+            }
+            var url = jsonObject.results[i - 1].url
+            // found our index, now write correct data
+            var jsondata = '{ "major": ' + REV_MAJOR + ', "minor": ' + REV_MINOR + ', "name": "Plant3-dash", "build": ' + REV_BUILD + '}'
+            callPostAJAX(postsetDashRevisionResponse, true, url, jsondata);
+        }
+
+        function postsetDashRevisionResponse(code, data) {
+            //console.users(code);
+        }
+
+        function getSetpointData() {
+            callGetAJAX(getJSONfromAPIgetSetpointData, true, controls);
+        }
+
+        function getJSONfromAPIgetSetpointData(code, data) {
+            var jsonObject = JSON.parse(data);
+            var text = "";
+            for (i = 1; i < jsonObject.count + 1; i++) {
+                try {
+                    switch (i) {
+                        case 7:
+                            text = "ok";
+                            if (jsonObject.results[i - 1].setpoint == 0) text = "low";
+                            break;
+                        case 8:
+                        case 9:
+                        case 10:
+                            text = "on";
+                            if (jsonObject.results[i - 1].setpoint == 0) text = "off";
+                            break;
+
+                        default:
+                            text = jsonObject.results[i - 1].setpoint;
+
+                    }
+                    if (jsonObject.results[i - 1].error == 0) {
+                        document.getElementById('/controls/' + i + '/').className = 'col-sm-2'
+                    }
+                    else {
+                        document.getElementById('/controls/' + i + '/').className = 'col-sm-2  redtext'
+                    }
+
+                    if (jsonObject.results[i - 1].enabled == true) {
+                        document.getElementById('/controls/' + i + '/').className = 'col-sm-2'
+                    }
+                    else {
+                        document.getElementById('/controls/' + i + '/').className = 'col-sm-2  orangetext'
+                    }
+
+                    document.getElementById('/controls/' + i + '/').innerHTML = text;
+                }
+                catch (err) {
+                    //console.users(i)
+                }
+            }
+        }
+
+        function getIPAddress() {
+            callPostAJAX(phpreturngetIPAddress, true, ifconfigphp, "");
+        }
+
+        function phpreturngetIPAddress(code, data) {
+            // run through the lst removing ESSIS:, spaces, etc and posting it to the table
+            // remove white spaces
+            data = data.replace(/ /g, '');
+            var eth0idx = data.indexOf("eth0");
+            var loidx = data.indexOf("lo");
+            var wlan0idx = data.indexOf("wlan0");
+
+            // wire IP
+            var temp = data.substring(eth0idx, loidx)
+            var eth0ipidxS = temp.indexOf("inetaddr:") + 9;
+            var eth0ipidxE = temp.indexOf("Bcast:");
+            eth0ip = temp.substring(eth0ipidxS, eth0ipidxE);
+
+            // wifi IP
+            temp = data.substring(wlan0idx);
+            var wlan0ipidxS = temp.indexOf("inetaddr:") + 9;
+            if (wlan0ipidxS == 8) {
+                wlan0ip = "Not Connected";
+            }
+            else {
+                var wlan0ipidxE = temp.indexOf("Bcast:");
+                wlan0ip = temp.substring(wlan0ipidxS, wlan0ipidxE);
+            }
+
+            // update the ip
+            document.getElementById("ippwire").innerHTML = eth0ip;
+            document.getElementById("ippwifi").innerHTML = wlan0ip;
+        }
+
+        function onclickLogin() {
+            // check user credentials
+            var user = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
+            sessionStorage.setItem("passtemp",pass);
+            var data = JSON.stringify({username:user, password: pass})
+            callPostAJAX(onclickLoginResponse, true, login, data);
+        }
+
+        function onclickLoginResponse(code, data) {
+            if ( code == 200 ) {
+                var jsonObject = JSON.parse(data);
+                sessionStorage.setItem("authuser",jsonObject.uuid);
+                sessionStorage.setItem("authuseraccess",jsonObject.access);
+                var pass = sessionStorage.getItem("passtemp");
+                sessionStorage.setItem("authuserpassword",pass);
+                location.reload();
+            }
+
+        }
+
+    </script>
+
+    <script src="../static/js/util.js"></script>
+
+</head>
+
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+<body onload="getFormData();timerFunc = setInterval(updateFormData, 10000);">
+<!-- <body onload="getFormData()"> -->
+
+<div class="template">
+    <div class="container-fluid">
+        <h3><b>Recipe</b></h3>
+        <div class="row">
+            <div class="col-xs-3">Current (Last)</div>
+            <div class="col-xs-4" id="/recipe/"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Start</div>
+            <div class="col-sm-4" id="/recipestart/"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">End</div>
+            <div class="col-sm-4" id="/recipeend/"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Current Time</div>
+            <div class="col-sm-4" id="currenttime"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div>
+            <h3><b>Water</b> <i class="fa fa-spinner" id="waterspinner" style="font-size:14px"></i></h3>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Measurement</div>
+            <div class="col-sm-2">Reading</div>
+            <div class="col-sm-2">Setpoint</div>
+            <div class="col-sm-2">Units</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Temp</div>
+            <div class="col-sm-2" id="/sensors/2/"></div>
+            <div class="col-sm-2">-</div>
+            <div class="col-sm-2">C</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">EC</div>
+            <div class="col-sm-2" id="/sensors/3/"></div>
+            <div class="col-sm-2" id="/controls/6/"></div>
+            <div class="col-sm-2">uS</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">ph</div>
+            <div class="col-sm-2" id="/sensors/1/"></div>
+            <div class="col-sm-2" id="/controls/5/"></div>
+            <div class="col-sm-2">pH</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Level</div>
+            <div class="col-sm-2" id="/sensors/9/"></div>
+            <div class="col-sm-2" id="/controls/7/"></div>
+            <div class="col-sm-2">ok/low</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Circulation</div>
+            <div class="col-sm-2">-</div>
+            <div class="col-sm-2" id="/controls/8/"></div>
+            <div class="col-sm-2">on/off</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Aeration</div>
+            <div class="col-sm-2">-</div>
+            <div class="col-sm-2" id="/controls/9/"></div>
+            <div class="col-sm-2">on/off</div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <h3><b>Environment</b> <i class="fa fa-spinner" id="envspinner" style="font-size:14px"></i></h3>
+        <div class="row">
+            <div class="col-sm-2">Measurement</div>
+            <div class="col-sm-2">Reading</div>
+            <div class="col-sm-2">Setpoint</div>
+            <div class="col-sm-2">Units</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Temp</div>
+            <div class="col-sm-2" id="/sensors/6/"></div>
+            <div class="col-sm-2" id="/controls/1/"></div>
+            <div class="col-sm-2">C</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Humidity</div>
+            <div class="col-sm-2" id="/sensors/7/"></div>
+            <div class="col-sm-2" id="/controls/4/"></div>
+            <div class="col-sm-2">%</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">CO2</div>
+            <div class="col-sm-2" id="/sensors/8/"></div>
+            <div class="col-sm-2" id="/controls/3/"></div>
+            <div class="col-sm-2">ppm</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Door</div>
+            <div class="col-sm-2" id="/sensors/10/"></div>
+            <div class="col-sm-2">-</div>
+            <div class="col-sm-2">open/closed</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Circulation</div>
+            <div class="col-sm-2">-</div>
+            <div class="col-sm-2" id="/controls/10/"></div>
+            <div class="col-sm-2">on/off</div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h3><b>Light</b> <i class="fa fa-spinner" id="lightpinner" style="font-size:14px"></i></h3>
+        <div class="row">
+            <div class="col-sm-2">Measurement</div>
+            <div class="col-sm-2">Reading</div>
+            <div class="col-sm-2">Setpoint</div>
+            <div class="col-sm-2">Units</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Light</div>
+            <div class="col-sm-2" id="/sensors/5/"></div>
+            <div class="col-sm-2" id="/controls/2/"></div>
+            <div class="col-sm-2">PAR</div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <h3><b>IP</b></h3>
+        <div class="row">
+            <div class="col-sm-3">Wire Address</div>
+            <div class="col-sm-3" id="ippwire"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Wifi Address</div>
+            <div class="col-sm-3" id="ippwifi"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loadModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="title text"></h4>
+                </div>
+                <div class="modal-body">
+                    <p id="error text"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!--    the key to keeping the dialog modal is data-backdrop=static-->
+<!--    <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true"
+         data-backdrop="static"
+         style="display: none;">-->
+        <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true"
+             style="display: none;">
+        <div class="modal-dialog modal-sm">
+            <div class="loginmodal-container">
+                <h1><font color = "#FFFFFF">Please Log In</font></h1><br>
+                <form>
+                    <input type="text" id="username" placeholder="Username">
+                    <input type="password" id="password" placeholder="Password">
+                    <input type="button" onclick="onclickLogin()" name="login" class="login loginmodal-submit" value="Login">
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

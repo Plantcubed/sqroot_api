@@ -1,0 +1,47 @@
+[
+  {
+    "model": "revisions.revision",
+    "fields": {
+      "name": "Plant3-api",
+      "major": 0,
+      "minor": 1,
+      "build": 69
+    }
+  },
+  {
+    "model": "revisions.revision",
+    "fields": {
+      "name": "Plant3-dash",
+      "major": 0,
+      "minor": 0,
+      "build": 0
+    }
+  },
+  {
+    "model": "revisions.revision",
+    "fields": {
+      "name": "Plant3-arduino",
+      "major": 0,
+      "minor": 0,
+      "build": 0
+    }
+  },
+    {
+    "model": "revisions.revision",
+    "fields": {
+      "name": "Plant3-ctrl",
+      "major": 0,
+      "minor": 0,
+      "build": 0
+    }
+  },
+    {
+    "model": "revisions.revision",
+    "fields": {
+      "name": "Plant3-os",
+      "major": 0,
+      "minor": 0,
+      "build": 0
+    }
+  }
+]

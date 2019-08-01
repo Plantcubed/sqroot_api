@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+    {% load static %}
+    <script src="{% static 'js/moment.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datetimepicker.min.js' %}"></script>
+
+{% block content %}
+
+
+    <title>SqRoot - Setup</title>
+
+
+    <!-- return to home page after 5 minutes -->
+    <script>setTimeout(function () {
+        window.location.href = "/"
+    }, 300000);</script>
+
+</head>
+
+<script>
+    var execute = "/direct/execute/"
+    var direct = "/direct/";
+
+    var TIMEOUT = 30;
+    var wifiindex = "";
+
+    {% load static %}
+    var wifilistphp = "{% static "php/eesidlist.php" %}";
+    var settimephp =  "{% static "php/settime.php" %}";
+
+    // disable console logging.
+    // console.users = function() {}
+
+    function getFormData() {
+        getWifiSSID();
+    }
+
+    function updateFormData() {
+    }
+
+    function getJSONfromAPIDirectData(code, data) {
+        // update the time
+        document.getElementById("datetime").innerHTML = getFormattedDate();
+        // get resonse
+
+        if (code == 200) {
+            var jsonObject = JSON.parse(data);
+
+            // still waiting..
+            if ((jsonObject.results_rdy == false) && (jsonObject.command_rdy == true)) return
+            // enable buttons
+            controlButtons(false)
+
+            if (jsonObject.results_rdy == true) {
+                document.getElementById("title text").innerHTML = "Success";
+                document.getElementById("error text").innerHTML = "Calibration complete.";
+                $("#loadModal").modal();
+            }
+            else if (jsonObject.timeo == true) {
+                document.getElementById("title text").innerHTML = "Failed";
+                document.getElementById("error text").innerHTML = "Calibration failed. Please try again.";
+                $("#loadModal").modal();
+            }
+        }
+        else {
+            document.getElementById("title text").innerHTML = "Failed";
+            document.getElementById("error text").innerHTML = "Calibration failed. Please try again.";
+            $("#loadModal").modal();
+            controlButtons(false)
+        }
+    }
+
+    function getWifiSSID() {
+        callPostAJAX(phpreturngetWifiSSID, true, wifilistphp, "");
+    }
+
+    function phpreturngetWifiSSID(code, data) {
+        // run through the lst removing ESSIS:, spaces, etc and posting it to the table
+        // remove white spaces
+        data = data.replace(/ /g, '');
+        var wdata = data.split("ESSID:");
+        var temp = '';
+        // get the table
+        var table = document.getElementById("wifilist");
+
+        for (i = wdata.length - 1; i != 0; i--) {
+            temp = wdata[i].replace(/ /g, '');
+            addWifitoList(i, temp);
+        }
+    }
+
+    function addWifitoList(index, name) {
+        var table = document.getElementById("wifilist");
+        var row = table.insertRow(0);
+        row.id = "wifilist" + index;
+        row.onclick = function () {
+            onclickWifiControl(this)
+        }
+        var cell1 = row.insertCell(0);
+        cell1.innerHTML = name;
+    }
+
+    function onclickWifiControl(arg) {
+        if (wifiindex != "") {
+            // deselect row
+            var row = document.getElementById(wifiindex);
+            row.className = "";
+            if (wifiindex == arg.id) {
+                wifiindex = "";
+                var connbut = document.getElementById("connectbutton");
+                connbut.className = "btn btn-primary btn-md disabled"
+                return
+            }
+        }
+        var row = document.getElementById(arg.id);
+        row.className = "info";
+        wifiindex = arg.id;
+        // enable run buttone
+        var connbut = document.getElementById("connectbutton");
+        connbut.className = "btn btn-primary btn-md enabled"
+    }
+
+    function onclickConnectWiFi() {
+        // get the index from recipe index
+        index = wifiindex.replace("wifilist", "");
+        // do something to get a password
+
+        // modify the wifi settings
+    }
+
+    function controlButtons(state) {
+        //disable button
+        document.getElementById("callowbutton").disabled = state;
+        document.getElementById("calhighbutton").disabled = state;
+        document.getElementById("calphbutton").disabled = state;
+    }
+
+    function onclickCalibrateLow() {
+        controlButtons(true)
+
+        var data = '{ "command": "SWEC 1 6", "command_waitto": ' + TIMEOUT + ' }';
+        var url = execute;
+        callPostAJAX(postDummy, true, url, data);
+    }
+
+    function onclickCalibrateHigh() {
+        controlButtons(true)
+
+        var data = '{ "command": "SWEC 1 7", "command_waitto": ' + TIMEOUT + ' }';
+        var url = execute;
+        callPostAJAX(postDummy, true, url, data);
+    }
+
+    function onclickCalibratePh() {
+        controlButtons(true)
+
+        var data1 = JSON.stringify({ command: 'SWPH 1 2', command_waitto: TIMEOUT })
+        var url = execute;
+        callPostAJAX(postDummy, true, url, data);
+    }
+
+    function postDummy(code, data) {
+        controlButtons(false)
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+   // $(document).ready(function () {
+        $(function () {
+            $('#datetimepicker1').datetimepicker({
+                format: 'MM-DD-YYYY h:mm:ss a',
+                useCurrent: false
+            }).on('dp.show', function () {
+                // https://github.com/Eonasdan/bootstrap-datetimepicker/issues/1311 (Time always starts at 12:00 AM)
+                if ($(this).data("DateTimePicker").date() === null)
+                    $(this).data("DateTimePicker").date(moment());
+            }).on('dp.hide', function () {
+                var datedata = $(this).data("DateTimePicker").date().format('DD MMM YYYY HH:mm:ss');
+                datedata = '"' + datedata + '"';
+                var data = {date: datedata};
+                $.post(settimephp, data);
+            });
+        });
+    });
+
+</script>
+
+
+
+<body>
+<body onload="getFormData();timerFunc = setInterval(updateFormData, 5000);">
+
+
+<div class="template">
+    <div class="container-fluid">
+        <div>
+            <h3><b>Date/Time</b></h3>
+        </div>
+        <div class="row">
+            <div class='col-sm-6'>
+                <div class="form-group">
+                    <div class='input-group date' id='datetimepicker1'>
+                        <input type='text' class="form-control"/>
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container-fluid">
+        <h3><b>WiFi</b></h3>
+        <div class="col-sm-5">
+            <table class="table table-striped" id="wifitbl">
+                <thead>
+                <tr>
+                    <th>SSID</th>
+                </thead>
+                <tbody id="wifilist" class='clickable-row mytbody'>
+                </tbody>
+            </table>
+            <br>
+            <br>
+            <div>
+                <input type="text" class="form-control" id="wifipass" placeholder="password">
+            </div>
+            <br>
+            <button type="button" onclick="onclickConnectWiFi()" id="connectbutton"
+                    class="btn btn-primary btn-md disabled">Connect
+            </button>
+        </div>
+    </div>
+    <br>
+
+    <div class="container-fluid">
+        <h3><b>Calibration</b></h3>
+        <div class="eclow">
+            <h4>EC Low Calibration</h4>
+            <p>
+                Insert probe into 1.413uS test solution, press Cal EC Low to calibrate.
+            </p>
+            <button type="button" onclick="onclickCalibrateLow()" id="callowbutton" class="btn btn-primary btn-md">
+                Cal EC Low
+            </button>
+        </div>
+        <div class="echigh">
+            <h4>EC High Calibration</h4>
+            <p>
+                Insert probe into 12.883uS test solution, press Cal EC High to calibrate.
+            </p>
+            <button type="button" onclick="onclickCalibrateHigh()" id="calhighbutton" class="btn btn-primary btn-md">
+                Cal EC High
+            </button>
+        </div>
+        <div class="echigh">
+            <h4>pH Calibration</h4>
+            <p>
+                Insert probe into pH7.0 buffer solution, press Cal pH to calibrate.
+            </p>
+            <button type="button" onclick="onclickCalibratePh()" id="calphbutton" class="btn btn-primary btn-md">
+                Cal pH
+            </button>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="loadModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="title text"></h4>
+                </div>
+                <div class="modal-body">
+                    <p id="error text"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

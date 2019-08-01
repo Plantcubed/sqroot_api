@@ -1,0 +1,23 @@
+from django.db import models
+
+class Control(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    index = models.PositiveIntegerField(editable=True)
+    command_code = models.CharField(max_length=100, blank=True)
+    extra = models.CharField(max_length=200, blank=True)
+    setpoint = models.FloatField(editable=True)
+    actuator_code = models.CharField(max_length=20, blank=True)
+    actuator_id = models.PositiveIntegerField(editable=True)
+    sensor_code = models.CharField(max_length=20, blank=True)
+    sensor_id = models.PositiveIntegerField(editable=True)
+    controller = models.CharField(max_length=40, blank=True)
+    ctl_band_h = models.FloatField(editable=True)
+    ctl_band_l = models.FloatField(editable=True)
+    op_band_max = models.FloatField(editable=True)
+    op_band_min = models.FloatField(editable=True)
+    Kp = models.FloatField(editable=True)
+    Ki = models.FloatField(editable=True)
+    Kd = models.FloatField(editable=True)
+    dt = models.PositiveIntegerField(editable=True)
+    error = models.PositiveIntegerField(editable=True)
+    enabled = models.BooleanField(editable=True)

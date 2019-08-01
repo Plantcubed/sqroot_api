@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <title>SqRoot - About</title>
+
+    <!-- return to home page after 60 seconds -->
+    <script>setTimeout(function(){window.location.href="/"},300000);</script>
+
+    <script>
+        var revisions = "/revisions/";
+
+        // disable console logging.
+        // console.users = function() {}
+
+         // initial form load data
+        function getFormData() {
+            getRevisionData();
+
+            //getFormattedDate();
+        }
+
+        // refresh data
+        function updateFormData() {
+        }
+
+        function getRevisionData() {
+            callGetAJAX(getJSONfromAPIgetRevisionData, true, revisions);
+        }
+
+        function getJSONfromAPIgetRevisionData(code, data) {
+            var jsonObject = JSON.parse(data);
+
+            for (i = jsonObject.count; i != 0; i--) {
+                var outstring = 'V' + jsonObject.results[i - 1].major + '.' + jsonObject.results[i - 1].minor + '.' + jsonObject.results[i - 1].build
+                document.getElementById(jsonObject.results[i - 1].name + 'N').innerHTML =  '<b>' + jsonObject.results[i - 1].name + '</b>'
+                document.getElementById(jsonObject.results[i - 1].name + 'R').innerHTML = outstring
+            }
+        }
+
+    </script>
+
+<body onload="getFormData();timerFunc = setInterval( updateFormData, 15000);">
+
+
+<div class="template">
+    <div class=".container-fluid">
+        <p>
+        <h3><b>SqRoot Dashboard</b></h3>
+        </p>
+        <p>
+            Plantcubed Corporation software is made avaialble under The MIT License (MIT). Software is made available in
+            the Plantcubed repo on GitHub.
+        </p>
+        <p>
+            The MIT License (MIT)
+            Copyright (c) 2016 Plantcubed Corporation
+        </p>
+        <p>
+            Full text of the license may be found at https://opensource.org/licenses/MIT
+        </p>
+
+        <h3><b>Software Revisions</b></h3>
+        <div class="row">
+            <div class="col-sm-3" id="Plant3-dashN"></div>
+            <div class="col-sm-3" id="Plant3-dashR"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" id="Plant3-apiN"></div>
+            <div class="col-sm-3" id="Plant3-apiR"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" id="Plant3-arduinoN"></div>
+            <div class="col-sm-3" id="Plant3-arduinoR"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" id="Plant3-ctrlN"></div>
+            <div class="col-sm-3" id="Plant3-ctrlR"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" id="Plant3-osN"></div>
+            <div class="col-sm-3" id="Plant3-osR"></div>
+        </div>
+        {% load static %}
+        <img src="{% static "images/temp_logo.png" %}" alt="name" width="150" height="75"/>
+    </div>
+    <div class=".container-fluid">
+        <h3><b>Open Source Software (OSS) Attributions</b></h3>
+        <p>
+            <b>gro-api - Copyright (c) 2014 MIT Open Agriculture Initiative</b> and is licensed according to the terms
+            of the GNU AGPL v2.0 license available at http://www.gnu.org/licenses/agpl-2.0.html
+        </p>
+        <p>
+            <b>gro-controller - Copyright (c) 2014 MIT Open Agriculture Initiative</b> and is licensed according to the
+            terms of the GNU AGPL v2.0 license available at http://www.gnu.org/licenses/agpl-2.0.html
+        </p>
+        <p>
+            <b>gro-microcontroller - Copyright (c) 2014 MIT Open Agriculture Initiative</b>> and is licensed according
+            to the terms of the GNU AGPL v2.0 license available at http://www.gnu.org/licenses/agpl-2.0.html
+        </p>
+        <p>
+            <b>requests - Copyright (c) 2016 Kenneth Reitz</b> and is licensed according to the terms of the Apache
+            License v2.0 available at http://www.apache.org/licenses/LICENSE-2.0
+        </p>
+        <p>
+            <b>bootstrap - Copyright (c) 2016 Twitter</b> and is licensed according to the terms of the MIT License
+            (MIT) available at https://opensource.org/licenses/MIT
+        </p>
+        <p>
+            <b>http-request - Copyright (c) 2014 Kevin Sawicki</b> and is licensed according to the terms of the MIT
+            License (MIT) available at https://opensource.org/licenses/MIT
+        </p>
+        <p>
+            <b>bootstrap toggle - Copyright (c) 2014 Min Hur, The New York Times Company</b> and is licensed according to the terms of the MIT
+            License (MIT) available at https://opensource.org/licenses/MIT
+        </p>
+        <p>
+            <b>bootstrap-datetimepicker - Copyright (c) 2015 Jonathan Peterson (@Eonasdan)</b> and is licensed according to the terms of the MIT
+            License (MIT) available at https://opensource.org/licenses/MIT
+        </p>
+    </div>
+
+</div>
+
+{% endblock %}

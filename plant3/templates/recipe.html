@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>SqRoot - Recipe</title>
+
+<!-- return to home page after 60 seconds -->
+<script>setTimeout(function () {
+    window.location.href = "/"
+}, 300000);</script>
+
+<script type="text/javascript">
+    //URIs
+    var recipe = "/recipes/"
+    var recipeRun = "/recipes/runs/";
+    var recipeStop = "/recipes/runs/stop/";
+    var controls = "/controls/";
+    var value = "/value/";
+    var timerFunc;
+    var recipeindex = "";
+
+    // disable console logging.
+    // console.users = function() {}
+
+    function getFormData() {
+        getReceipeData();
+        // getSetpointData();
+        getReceipeHistory();
+    }
+
+
+    function updateFormData() {
+        //getSetpointData();
+    }
+
+
+    function getReceipeData() {
+        callGetAJAX(getJSONfromAPIgetReceipeData, true, recipe);
+    }
+
+
+    function getJSONfromAPIgetReceipeData(code, data) {
+        var jsonObject = JSON.parse(data);
+
+        var table = document.getElementById("reclist");
+
+        try {
+            table.deleteRow(0)
+        }
+        catch (err) {
+        }
+
+        for (i = jsonObject.count; i != 0; i--) {
+            addRecipetoList(i, jsonObject.results[i - 1].name, jsonObject.results[i - 1].description, jsonObject.results[i - 1].index);
+        }
+    }
+
+
+    function getReceipeHistory() {
+        callGetAJAX(getJSONfromAPIgetReceipeHistory, true, recipeRun);
+    }
+
+
+    function getJSONfromAPIgetReceipeHistory(code, data) {
+        var jsonObject = JSON.parse(data);
+
+        var table = document.getElementById("rechislist");
+
+        try {
+            table.deleteRow(0)
+        }
+        catch (err) {
+        }
+
+        var start = ""
+        var end = ""
+        for (i = jsonObject.count; i != 0; i--) {
+            var jsonrecipename = jsonObject.results[i - 1]
+            var startjson = new Date(jsonrecipename.start_timestamp * 1000);
+            var endjson = new Date(jsonrecipename.end_timestamp * 1000);
+            start = startjson.toLocaleDateString('en-US') + " " + startjson.toLocaleTimeString('en-US');
+            end = endjson.toLocaleDateString('en-US') + " " + endjson.toLocaleTimeString('en-US');
+            addRecipeHistorytoList(i, jsonrecipename.name, start, end);
+        }
+    }
+
+
+    function addRecipetoList(index, name, desciption, recindex) {
+        var table = document.getElementById("reclist");
+        var row = table.insertRow(0);
+        row.id = "reclist" + index;
+        row.onclick = function () {
+            onclickRecControl(this)
+        }
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(0);
+        var cell3 = row.insertCell(0);
+        cell1.value = recindex;
+        cell1.id = "recindex" + index;
+        //cell1.class = "hidden";
+        //cell1.style.display='none';
+        cell2.innerHTML = desciption;
+        cell3.id = "reclistnameid" + index;
+        cell3.innerHTML = name;
+    }
+
+    function addRecipeHistorytoList(index, filename, starttime, endtime) {
+        var table = document.getElementById("rechislist");
+        var row = table.insertRow(0);
+        row.id = "rechislist" + index;
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(0);
+        var cell3 = row.insertCell(0);
+        cell1.innerHTML = endtime;
+        cell2.innerHTML = starttime;
+        cell3.innerHTML = filename;
+    }
+
+    function onclickRecControl(arg) {
+        if (recipeindex != "") {
+            // deselect row
+            var row = document.getElementById(recipeindex);
+            row.className = "";
+            if (recipeindex == arg.id) {
+                recipeindex = "";
+                var runbut = document.getElementById("runbutton");
+                runbut.className = "btn btn-primary btn-md disabled"
+                return
+            }
+        }
+        var row = document.getElementById(arg.id);
+        row.className = "info";
+        recipeindex = arg.id;
+        // enable run buttone
+        var runbut = document.getElementById("runbutton");
+        runbut.className = "btn btn-primary btn-md enabled"
+    }
+
+    function onclickRunRecipe() {
+        // get the index from recipe index
+        //var rec_index = recipeindex.replace("reclist", "");
+
+        // the two lines below were used to send the actual index of the run
+        // this was supposed to allow the user to load and select a new startup
+        // and shutdown file. since the current index is soooo deaply mixed throught
+        // the controller code I decided to just fix the startup as index 1 and
+        // shutdown as index 2 and have the api always add 2 to the request. This
+        // will works until I come up with a better way of handling this...
+        var index = recipeindex.replace("reclist", "");
+        var rec_index = document.getElementById('recindex' + index).value;
+        //console.log(rec_index)
+        var data = '{ "recipe": ' + parseInt(rec_index) + '}';
+        //console.log(data)
+        callPostAJAX(onclickRunRecipeResponse, true, recipeRun, data);
+    }
+
+
+    function onclickRunRecipeResponse(code, data) {
+        if (code == 200) {
+
+            document.getElementById("title text").innerHTML = "Success";
+            document.getElementById("error text").innerHTML = "Recipe will start momentarly";
+            $("#loadModal").modal();
+
+            // update sensors
+            refresh_counter = 0;
+
+            // now scan the recipe history
+            getReceipeHistory()
+
+            return;
+        }
+        else {
+            document.getElementById("title text").innerHTML = "Failed";
+            switch (code) {
+                case 503:
+                    document.getElementById("error text").innerHTML = "Recipe currently running.";
+                    break;
+                case 204:
+                    document.getElementById("error text").innerHTML = "Recipe not found.";
+                    break;
+                case 416:
+                    document.getElementById("error text").innerHTML = "Recipe endtime is zero or less than start";
+                    break;
+                case 226:
+                    document.getElementById("error text").innerHTML = "Error in time format in recipe.";
+                    break;
+                default:
+                    ocument.getElementById("error text").innerHTML = "Unknown Error.";
+            }
+        }
+
+        $("#loadModal").modal()
+    }
+
+    function onclickStopRecipe() {
+        var data = '';
+
+        callPostAJAX(onclickStopRecipeResponse, true, recipeStop, data);
+    }
+
+    function onclickStopRecipeResponse(code, data) {
+        document.getElementById("title text").innerHTML = "Success";
+        document.getElementById("error text").innerHTML = "Recipe will stop momentarly.";
+        $("#loadModal").modal();
+
+        // update sensors
+        refresh_counter = 0;
+    }
+
+    document.addEventListener('change', function () {
+        var filename = document.getElementById('file-input').value;
+        if (filename == '') return;
+        // remove C:\fakepath\ text
+        filename = filename.replace('C:\\fakepath\\', '');
+        console.log(filename);
+        var description = document.getElementById('receipedesc').value;
+        console.log(description);
+        if (description == "") {
+            document.getElementById("title text").innerHTML = "Error";
+            document.getElementById("error text").innerHTML = "Description cannot be blank.";
+            $("#loadModal").modal();
+            return;
+        }
+        sendrecipetoapi(filename, description, filename);
+    });
+
+    function sendrecipetoapi(filename, filedesc, file) {
+        var form = new FormData();
+        form.append("name", filename);
+        form.append("description", filedesc);
+        form.append("type", 0);
+        form.append("file", $('input[type=file]')[0].files[0]);
+
+        var settings = {
+            "url": recipe,
+            "method": "POST",
+            "headers": {
+                "cache-control": "no-cache",
+            },
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+
+        $.ajax(settings).done(function (response) {
+            // clear input field
+            $("#receipedesc").val("");
+            // refresh recipe list
+            getReceipeData();
+            // disable button
+            // document.getElementById("filebut").disabled = true;
+        });
+    }
+
+
+</script>
+
+</head>
+
+<body onload="getFormData();timerFunc = setInterval( updateFormData, 1000);">
+
+<div class="template">
+    <div class="container-fluid">
+        <h3><b>Recipe Control</b></h3>
+        <div class="col-sm-8">
+            <table class="table table-striped" stype="max-height: 100px; overflow-y:scroll" id="rectbl">
+                <thead>
+                <tr>
+                    <th stype="float:left">File Name</th>
+                    <th stype="float:left">Desc.</th>
+                    <th class="hidden" stype="float:left">Visible Recipe Index</th>
+                </thead>
+                <tbody id="reclist" class='clickable-row mytbody'
+                       stype="float:left; display: block; height: 100px; overflow: auto;">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <br>
+        <button type="button" onclick="onclickRunRecipe()" id="runbutton" class="btn btn-primary btn-md disabled">Run
+            Selected
+        </button>
+        <button type="button" onclick="onclickStopRecipe()" id="stopbutton" class="btn btn-primary btn-md">Run
+            Stop Current
+        </button>
+
+    </div>
+
+    <br>
+    <div class="container-fluid">
+        <h4>Load New Recipe</h4>
+        <form enctype="multipart/form-data" method="post" class="form-inline">
+            <div class="form-group">
+                <label for="receipedesc">Recipe Description</label>
+                <input type="text" class="form-control" id="receipedesc" name="description"
+                       placeholder="Grow Recipe File Desciption">
+                </label>
+                <label class="btn btn-primary btn-md">
+                    Browse&hellip; <input type="file" id="file-input" oncchange="onclickUploadRecipe()" name="file"
+                                          style="display: none;">
+                </label>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="container-fluid">
+        <h3><b>Recipe Run History</b></h3>
+        <div class="col-sm-10">
+            <table class="table table-hover table-striped centertext">
+                <thead class="centertext">
+                <tr>
+                    <th>File Name</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </thead>
+                <tbody id="rechislist" class='clickable-row mytbody'>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loadModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="title text"></h4>
+                </div>
+                <div class="modal-body">
+                    <p id="error text"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

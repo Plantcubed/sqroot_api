@@ -1,0 +1,56 @@
+{
+    "_id": "19024f51c1954d5093cff8f29a018d54",
+    "description": "sqroot shutdown recipe",
+    "operations": [
+        [
+            0,
+            "light_par",
+            0.0
+        ],
+        [
+            0,
+            "air_temperature",
+            "disabled"
+        ],
+        [
+            0,
+            "air_humidity",
+            "disabled"
+        ],
+        [
+            0,
+            "water_electrical_conductivity",
+            "disabled"
+        ],
+        [
+            0,
+            "water_ph",
+            "disabled"
+        ],
+        [
+            0,
+            "air_carbon_dioxide",
+           "disabled"
+        ],
+        [
+            0,
+            "air_circulation_fan",
+            1.0
+        ],
+        [
+            0,
+            "water_circulation_pump",
+            1.0
+        ],
+        [
+            0,
+            "water_aeration_pump",
+            1.0
+        ],
+        [
+            0,
+            "water_level",
+           1.0
+        ]
+    ]
+}

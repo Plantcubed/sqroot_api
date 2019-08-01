@@ -1,0 +1,66 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+
+{% if next %}
+    {% if user.is_authenticated %}
+
+<p>Your account doesn't have access to this page. To proceed,
+    please login with an account that has access.</p>
+    {% else %}
+
+<p>Please login to see this page.</p>
+    {% endif %}
+{% endif %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="login-panel panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Enter user details</h3>
+                </div>
+                <div class="panel-body">
+                    <form method="post" action="/user/add/">
+{% csrf_token %}
+
+                        <p class="bs-component">
+                            <table>
+                                <tr>
+                                    <td>{{ form.username.label_tag }}</td>
+                                    <td>{{ form.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ form.email.label_tag }}</td>
+                                    <td>{{ form.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ form.password.label_tag }}</td>
+                                    <td>{{ form.password }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ form.confirmpassword.label_tag }}</td>
+                                    <td>{{ form.confirmpassword }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ form.permissions.label_tag }}</td>
+                                    <td>{{ form.permissions }}</td>
+                                </tr>
+                            </table>
+                        </p>
+                        <p class="bs-component">
+                            <center>
+                                <input class="btn btn-primary btn-md" type="submit" value="add" />
+                            </center>
+                        </p>
+                        <input type="hidden" name="next" value="{{ next }}" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+

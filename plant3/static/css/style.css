@@ -1,0 +1,133 @@
+::-webkit-scrollbar {
+  width: 3em;
+  height: 2em
+}
+
+::-webkit-scrollbar-button {
+  background: #eee
+}
+::-webkit-scrollbar-track-piece {
+  background: #ccc
+}
+::-webkit-scrollbar-thumb {
+  background: #888
+}
+
+.mycenter {
+    text-align: center;
+    background: #888
+}
+
+
+body {
+  padding-top: 5px;
+  font-family: Verdana;
+}
+
+hr {
+  border-width: thick;
+}
+
+.mydatepick {
+  height: 400px
+}
+
+.template {
+  padding: 30px 30px;
+  text-align: left;
+}
+
+tr {
+  padding: 1px 5px;
+  width: 100%;
+  display: inline-table;
+}
+
+.mybutton {
+  position: relative;
+}
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  outline: none;
+  background: blue;
+  cursor: inherit;
+  display: block;
+}
+.ui-widget-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ui-front {
+  z-index: 100;
+}
+
+.table{
+  padding: 1px 5px;
+  height:200px;
+  overflow-y:scroll;
+}
+
+.mytbody{
+  overflow-y: scroll;
+  height: 200px;
+  width: 100%;
+  position: absolute;
+}
+
+.myimagediv {
+  width: 427px;
+  height: 320px;
+}
+
+.redtext {
+  color: red;
+}
+
+.orangetext {
+  color: orange;
+}
+
+.normal_black {
+  color: black;
+}
+
+.mynav{
+  font-size: 14pt;
+}
+
+.scrollbutton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.centertext{
+  text-align: center;
+}
+
+h3 {
+  font-size: 14pt;
+}
+
+.hidden {
+    display: block !important;
+    visibility: visible !important;
+}

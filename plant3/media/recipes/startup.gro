@@ -1,0 +1,26 @@
+{
+    "_id": "0ab9857dc23241e3aa45a361c6463ad1",
+    "description": "sqroot startup recipe",
+    "operations": [
+        [
+            0,
+            "air_circulation_fan",
+            1.0
+        ],
+        [
+            0,
+            "water_circulation_pump",
+            1.0
+        ],
+        [
+            0,
+            "water_aeration_pump",
+            1.0
+        ],
+        [
+            0,
+            "water_level",
+            1.0
+        ]
+    ]
+}

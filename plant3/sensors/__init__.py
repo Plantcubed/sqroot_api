@@ -1,0 +1,1 @@
+default_app_config = 'plant3api.sensors.apps.SensorsConfig'

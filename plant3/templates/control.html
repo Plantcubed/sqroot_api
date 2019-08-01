@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <title>SqRoot - Control</title>
+
+    <!-- return to home page after 60 seconds -->
+    <script>setTimeout(function(){window.location.href="/"},300000);</script>
+
+    <script>
+        var actuator = "/actuators/"
+        var value = "/value/";
+        var controls = '/controls/'
+        var enabled = '/enabled/'
+        var default_duration = 60;
+        var working_control_num = 5;
+
+        // disable console logging.
+        // console.users = function() {}
+
+        function getFormData() {
+            getDrawActuator();
+            getControlsState(5);
+            getControlsState(6);
+            getControlsState(7);
+        }
+
+
+        // refresh data
+        function updateFormData() {
+            getActuatorState();
+        }
+
+        function getControlsState(control) {
+            var url = controls + control.toString() + '/enabled/'
+            callGetAJAXExtra(getJSONfromAPIgetControlsState, true, url, false, false);
+        }
+
+        function getJSONfromAPIgetControlsState(na1, na2, code, data) {
+            var jsonObject = JSON.parse(data);
+            var controlnum = jsonObject.url;
+            var controlnum = controlnum.substr(controlnum.indexOf(controls)+10)
+            var controlnum = controlnum.substr(0,controlnum.indexOf('/'))
+            var enabled = jsonObject.enabled;
+            var controltext = 'Enable'
+            if ( enabled == true) controltext = 'Disable';
+
+            document.getElementById("control" + controlnum)  .innerHTML = controltext;
+        }
+
+
+        function getDrawActuator() {
+            callGetAJAXExtra(getJSONfromAPIgetDrawActuator, true, actuator, false, false);
+        }
+
+        function getJSONfromAPIgetDrawActuator(na1, na2, code, data) {
+            // main container
+            var divMain = document.getElementById("controllist");
+
+            var jsonObject = JSON.parse(data);
+            for (i = 1; i < jsonObject.count + 1; i++) {
+                // create element 1st
+                // group of group
+                var divContainer = document.createElement("div");
+                if ( i != 1) divContainer.innerHTML = '<br><br><br>'
+                var divName= document.createElement("div");
+                var divToggle= document.createElement("div");
+                var divButton= document.createElement("div");
+
+                divName.className = "col-sm-2";
+                divName.innerHTML = jsonObject.results[i - 1].name;
+
+                divToggle.className = "col-sm-2";
+                divToggle.innerHTML = '<input class="ontggl statetoggle" onchange="seteOverrideState(' + i + ')" type="checkbox" id="tggl' + i + '" data-toggle="toggle" size="default" >'
+
+                divButton.className = "col-sm-3";
+                divButton.innerHTML = '<button onclick="onclickButton()" type="button" id="bttn' + i + '" class="btn btn-secondary">Override</button>'
+
+                // add them all to the main containeer
+                divContainer.appendChild(divName);
+                divContainer.appendChild(divButton);
+                divContainer.appendChild(divToggle);
+
+                divMain.appendChild(divContainer);
+
+                var el_toggle = '#tggl' + i;
+                var el_button = '#bttn' + i;
+                try {
+
+                    if (jsonObject.results[i - 1].override == true) {
+                        $(el_button).attr('class', 'btn btn-primary');
+                    }
+                    else {
+                        $(el_button).attr('class', 'btn btn-secondary');
+                    }
+
+                    if (jsonObject.results[i - 1].value > 0) {
+                        $(el_toggle).bootstrapToggle('on');
+                    }
+                    else {
+                        $(el_toggle).bootstrapToggle('off');
+                    }
+
+                }
+                catch (err) {
+                    console.log("failed " + eid_toggle)
+                }
+            }
+        }
+
+
+        function getActuatorState() {
+            callGetAJAXExtra(getJSONfromAPIgetActuatorState, true, actuator, false, false);
+        }
+
+        function getJSONfromAPIgetActuatorState(na1, na2, code, data) {
+            var jsonObject = JSON.parse(data);
+            for (i = 1; i < jsonObject.count + 1; i++) {
+                var el_toggle = '#tggl' + i;
+                var el_button = '#bttn' + i;
+                try {
+                    if (jsonObject.results[i - 1].override == true) {
+                        //console.users("buttone primary");
+                        $(el_button).attr('class', 'btn btn-primary');
+                    }
+                    else {
+                       // console.users("buttton secondary");
+                        $(el_button).attr('class', 'btn btn-secondary');
+
+                        if (jsonObject.results[i - 1].value > 0) {
+                            $(el_toggle).bootstrapToggle('on');
+                        }
+                        else {
+                            $(el_toggle).bootstrapToggle('off');
+                        }
+                    }
+
+                }
+                catch (err) {
+                    console.log("failed " + eid_toggle)
+                }
+            }
+        }
+
+        function seteOverrideState(index) {
+
+            // get the current state of the button
+            var toggle = document.getElementById("tggl" + index)
+            var state = $("#tggl"+index).prop('checked');
+            // check if we are overriden
+            if ( $('#bttn' + index).attr('class') == 'btn btn-primary' ) {
+
+                // get override duration
+                var overd = document.getElementById("overdur").value;
+                if ( overd == '')
+                {
+                    overd = default_duration;
+                }
+
+                // yes, now change states
+                var data = '{ "override_duration": ' + overd + ', "override": true, "value": ';
+
+                switch (index) {
+                    case 4:
+                    case 5:
+                         if (state == true)
+                        {
+                            data = data + '100.0 }';
+                        }
+                        else
+                        {
+                            data = data + '0.0 }';
+                        }
+                        break;
+
+                    default:
+                        if (state == true)
+                        {
+                            data = data + '1.0 }';
+                        }
+                        else
+                        {
+                            data = data + '0.0 }';
+                        }
+                        break;
+                }
+
+                var url = actuator + index + value;
+                console.log(data);
+                console.log(url);
+                callPostAJAX(postseteOverrideStateResponse, true, url, data);
+            }
+        }
+
+        function postseteOverrideStateResponse(code, data) {
+            //console.users(code);
+        }
+
+        function onclickControlEnabled(controlnum) {
+            var data = ''
+            if ( document.getElementById("control" + controlnum).innerHTML == 'Enable' ) data = '{ "enabled": true }';
+            else data = '{ "enabled": false }';
+            var url = controls + controlnum.toString() + enabled;
+            //console.log(url);
+            //console.log(data);
+            callPostAJAXExtra(postDummy, true, url, data, controlnum, 0);
+        }
+
+
+        function postDummy(param1, param2, code, data) {
+            if (code == 200) {
+                var controltext = document.getElementById("control" + param1).innerHTML;
+                if (controltext == 'Enable') controltext = 'Disable';
+                else controltext = 'Enable'
+
+                document.getElementById("control" + param1).innerHTML = controltext;
+            }
+        }
+
+
+        function onclickButton() {
+            // get the button pressed
+            //console.users("here");
+            var el_button = '#' + document.activeElement.id;
+            var index =  el_button.substring(5)
+            var el_toggle = '#tggl' + index;
+            var url = actuator + index + value;
+
+            // toggle its state
+            if ($(el_button).attr('class') == "btn btn-secondary") {
+                $(el_button).attr('class', 'btn btn-primary');
+
+                // get override duration
+                var overd = document.getElementById("overdur").value;
+                if ( overd == '')
+                {
+                    overd = default_duration;
+                }
+
+                // send override
+
+                var data = '{ "override_duration": ' + overd + ', "override": true, "value": ';
+            }
+            else {
+                $(el_button).attr('class', 'btn btn-secondary');
+
+                // cancel override
+                var data = '{ "override_duration": ' + 0 + ', "override": false, "value": ';
+            }
+
+            if ( $(el_toggle).prop('checked') == true ) {
+                data = data + '1.0 }';
+            }
+            else {
+                data = data + '0.0 }';
+            }
+            //console.users(url);
+            console.log(data);
+            // send to api
+            callPostAJAX(postseteOverrideStateResponse, true, url, data);
+        }
+    </script>
+
+</head>
+
+<body onload="getFormData();timerFunc = setInterval(updateFormData, 1000);">
+
+<body>
+
+<div class="template">
+    <div class="container-fluid" id="controllist">
+        <h3><b>Hardware</b></h3>
+        <p>To change the state of an actuator, first click the <b>Override</b> button, then toggle the state as needed.</p>
+        <br>
+        <div class="container-fluid">
+            <form enctype="multipart/form-data" method="post" class="form-inline">
+                <div class="form-group">
+                    <label for="overdur">Override Duration</label>
+                    <input type="text" class="form-control" id="overdur" name="description" placeholder="60">
+                </div>
+            </form>
+        </div>
+        <br>
+        <div id="mytable">
+
+        </div>
+    </div>
+
+
+       <div class="container-fluid">
+        <h3><b>Controls</b></h3>
+        <div class="filling">
+            <h4>Automatic Filling</h4>
+            <button type="button" id="control7" onclick="onclickControlEnabled(7)" class="btn btn-primary btn-md">
+                Disable
+            </button>
+        </div>
+
+        <div class="ph">
+            <h4>Automatic pH</h4>
+            <button type="button" id="control5" onclick="onclickControlEnabled(5)" class="btn btn-primary btn-md">
+                Disable
+            </button>
+        </div>
+
+        <div class="ec">
+            <h4>Automatic EC</h4>
+            <button type="button" id="control6" onclick="onclickControlEnabled(6)" class="btn btn-primary btn-md">
+                Disable
+            </button>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}

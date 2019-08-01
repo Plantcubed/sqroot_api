@@ -1,0 +1,112 @@
+[
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "PLANT3PHEC Water pH",
+      "index": 1,
+      "instruction_code": "SWPH",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "PLANT3PHEC Water Temperature",
+      "index": 2,
+      "instruction_code": "SWTM",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "PLANT3PHEC Water EC",
+      "index": 3,
+      "instruction_code": "SWEC",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "TSL2561 Light Intensity",
+      "index": 4,
+      "instruction_code": "SLIN",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "TSL2561 Light PAR",
+      "index": 5,
+      "instruction_code": "SLPA",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "DHT220 Air Temperature",
+      "index": 6,
+      "instruction_code": "SATM",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "DHT220 Air Humidity",
+      "index": 7,
+      "instruction_code": "SAHU",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "GC0011 CO2 Sensor",
+      "index": 8,
+      "instruction_code": "SACO",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "Grow Tank Water Level",
+      "index": 9,
+      "instruction_code": "SWLV",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  },
+    {
+    "model": "sensors.sensor",
+    "fields": {
+      "name": "Door Sensor",
+      "index": 10,
+      "instruction_code": "SGWO",
+      "instruction_id": 1,
+      "extra": "",
+      "value": 0
+    }
+  }
+]
